@@ -18,7 +18,7 @@
    ========================================================= */
 
 const SHEET_NAME = 'Anmeldungen';
-const TOKEN = 'HIER_EIGENES_TOKEN_EINTRAGEN'; // nur fuer den Export in admin.html
+const TOKEN = 'QLDJFLAHEN7363KDLA'; // nur fuer den Export in admin.html
 
 /* An diese Adresse geht bei jeder Anmeldung eine Mail. */
 const MAIL_EMPFAENGER = 'serni4333@gmail.com';
