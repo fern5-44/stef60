@@ -37,8 +37,7 @@ const WHATSAPP_LINK = '';                   // z. B. 'https://chat.whatsapp.com/
       Es muss  {"ok":true, ...}  erscheinen.
    ========================================================= */
 
-const ENDPOINT =
-  'HIER_DIE_NEUE_WEB-APP-URL_EINTRAGEN'; // neue Tabelle = neue URL (endet auf /exec)
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycby70_V5wzUV4uwJ6ewRIiAwbQ-02OvNFImc3DR_5mRXtluDqKgI1i_BmNehdC1cGHo7/exec'; // neue Tabelle = neue URL (endet auf /exec)
 
 
 /* =========================================================
