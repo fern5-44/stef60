@@ -1,20 +1,16 @@
 /* =========================================================
    STEF60 – ANMELDUNGEN -> GOOGLE TABELLE + MAIL
-   (fuer die NEUE Google-Tabelle)
 
-   Einrichten:
+   Wer das Formular abschickt, ist angemeldet.
+   Es gibt kein Ja/Nein und keine Abmeldung.
+
+   Einrichten / aktualisieren:
    1. Google-Tabelle oeffnen -> Erweiterungen -> Apps Script
    2. Diesen Code komplett hineinkopieren (alten ersetzen), speichern
-   3. Oben die Funktion  testMail  auswaehlen und auf "Ausfuehren"
-      klicken. Google fragt einmalig nach der Erlaubnis zum
-      Mailversand -> bestaetigen. Du bekommst eine Testmail.
-   4. Bereitstellen -> Bereitstellungen verwalten -> Stift beim
+   3. Bereitstellen -> Bereitstellungen verwalten -> Stift beim
       bestehenden Eintrag -> Version: "Neue Version" -> Bereitstellen
       (so bleibt die URL gleich und app.js muss nicht geaendert werden)
-      ODER: Neue Bereitstellung -> Typ: Web-App
-        Ausfuehren als: Ich   |   Zugriff: Jeder
-      und die neue URL (endet auf /exec) in app.js bei ENDPOINT eintragen
-   5. Test im Browser:  <URL>?action=ping   ->  muss {"ok":true,...} zeigen
+   4. Test im Browser:  <URL>?action=ping   ->  muss {"ok":true,...} zeigen
    ========================================================= */
 
 const SHEET_NAME = 'Anmeldungen';
@@ -22,7 +18,6 @@ const TOKEN = 'QLDJFLAHEN7363KDLA'; // nur fuer den Export in admin.html
 
 /* An diese Adresse geht bei jeder Anmeldung eine Mail. */
 const MAIL_EMPFAENGER = 'serni4333@gmail.com';
-
 
 const COLUMNS = [
   'sentAt',
@@ -35,7 +30,6 @@ const COLUMNS = [
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.action === 'ping') return json(e, { ok: true, sheet: SHEET_NAME, time: new Date() });
-  if (p.action === 'stock') return json(e, { ok: true, items: OPTIONS });
   if (p.action === 'submit') return submit(e, p);
   if (p.action === 'export') return exportRows(e, p);
   return json(e, { ok: false, error: 'unbekannte action' });
@@ -51,39 +45,22 @@ function submit(e, p) {
     const nachname = String(p.nachname || '').trim();
     if (!vorname || !nachname) return json(e, { ok: false, error: 'name fehlt' });
 
-    const wanted = String(p.choices || '')
-      .split(',')
-      .map(function (s) { return s.trim(); })
-      .filter(String);
-
-    const text = wanted
-      .map(function (id) {
-        const item = OPTIONS.filter(function (x) { return x.id === id; })[0];
-        return item ? item.label : id;
-      })
-      .join('; ');
-
     const name = String(p.name || (vorname + ' ' + nachname)).trim();
     const remarks = String(p.remarks || '').trim();
 
+    /* Reihenfolge = COLUMNS */
     sheet().appendRow([
       new Date(),
       vorname,
       nachname,
       name,
-      wanted.join(','),
-      text,
       remarks,
     ]);
 
     /* Mail an dich. Ein Fehler hier darf die Anmeldung nicht
        kaputt machen – sie ist ja schon gespeichert. */
     try {
-      sendeMail_({
-        name: name,
-        choiceText: text,
-        remarks: remarks,
-      });
+      sendeMail_({ name: name, remarks: remarks });
     } catch (mailErr) {
       console.error('Mail fehlgeschlagen: ' + mailErr);
     }
@@ -100,9 +77,8 @@ function submit(e, p) {
 function sendeMail_(d) {
   const text =
     'Neue Anmeldung\n\n' +
-    'Name: '          + (d.name          || '-') + '\n' +
-    'Kommt: '         + (d.choiceText    || '-') + '\n' +
-    'Bemerkung: '     + (d.remarks       || '-') + '\n';
+    'Name: '      + (d.name    || '-') + '\n' +
+    'Bemerkung: ' + (d.remarks || '-') + '\n';
 
   MailApp.sendEmail(
     MAIL_EMPFAENGER,
@@ -115,7 +91,6 @@ function sendeMail_(d) {
 function testMail() {
   sendeMail_({
     name: 'Test Person',
-    choiceText: 'Ja, ich bin dabei',
     remarks: 'Das ist nur ein Test.',
   });
 }
@@ -136,8 +111,7 @@ function sheet() {
   }
 
   /* Solange noch keine Anmeldung drinsteht, darf die Kopfzeile an die
-     neuen Spalten angepasst werden. Sind schon Daten da, bleibt sie
-     unangetastet – dann lieber ein neues Tabellenblatt anlegen. */
+     neuen Spalten angepasst werden. */
   if (sh.getLastRow() < 2) writeHeader(sh);
 
   return sh;

@@ -16,57 +16,40 @@ const EVENT = {
 
 const TERMIN_DATEI = 'termin.ics';          // Kalendertermin, für alle gleich
 const UEBERSICHT_DATEI = 'uebersicht.png';  // Übersicht zum Herunterladen
-const WHATSAPP_LINK = '';                   // z. B. 'https://chat.whatsapp.com/...' – leer = kein Knopf
 
 
 /* =========================================================
    APPS SCRIPT  ***HIER DIE VERBINDUNG ZUM SHEET***
    ---------------------------------------------------------
-   Diese URL muss die AKTUELLE Bereitstellung der Web-App sein.
-   Google vergibt bei JEDER neuen Bereitstellung eine neue URL –
-   deshalb reisst die Verbindung ab, wenn man am Skript etwas
-   aendert und die alte URL stehen laesst.
-
-   So kommst du an eine frische URL:
-   1. Google-Tabelle oeffnen -> Erweiterungen -> Apps Script
-   2. Inhalt von apps-script.gs komplett hineinkopieren, speichern
-   3. Bereitstellen -> Neue Bereitstellung -> Typ: Web-App
-      Ausfuehren als: Ich   |   Zugriff: Jeder
-   4. Die angezeigte URL (endet auf /exec) hier unten einsetzen
-   5. Zum Testen im Browser aufrufen:  <URL>?action=ping
-      Es muss  {"ok":true, ...}  erscheinen.
+   Neue Bereitstellung = neue URL. Am besten immer ueber
+   "Bereitstellungen verwalten -> Stift -> Neue Version"
+   aktualisieren, dann bleibt diese URL gleich.
+   Test im Browser:  <URL>?action=ping  ->  {"ok":true, ...}
    ========================================================= */
 
-const ENDPOINT = 'https://script.google.com/macros/s/AKfycby70_V5wzUV4uwJ6ewRIiAwbQ-02OvNFImc3DR_5mRXtluDqKgI1i_BmNehdC1cGHo7/exec'; // neue Tabelle = neue URL (endet auf /exec)
+const ENDPOINT =
+  'https://script.google.com/macros/s/AKfycby70_V5wzUV4uwJ6ewRIiAwbQ-02OvNFImc3DR_5mRXtluDqKgI1i_BmNehdC1cGHo7/exec';
 
 
 /* =========================================================
-   AUSWAHL – SCHRITT 3
+   SICHERHEITSFRAGEN
    ---------------------------------------------------------
-   Die ids muessen mit OPTIONS in apps-script.gs uebereinstimmen.
+   PLATZHALTER: richtige Antwort je Frage eintragen –
+   'a', 'b', 'c' oder 'd' (= value der Antwort in index.html).
    ========================================================= */
 
-const CHOICE_TITLE = 'Bist du dabei?';
-const CHOICE_MODE = 'single';      // 'single' = ankreuzen, nur eine Option
-const CHOICE_REQUIRED = true;
+const SECURITY_ANSWERS = {
+  question1: 'd',   // 111100 = 60 im Binärsystem
+  question2: 'a',   // PLATZHALTER – richtige Antwort eintragen
+  question3: 'a'    // PLATZHALTER – richtige Antwort eintragen
+};
 
-const OPTIONS = [
-  {
-    id: 'dabei',
-    label: 'Ja, ich bin dabei',
-    note: ''
-  },
-  {
-    id: 'absage',
-    label: 'Leider nicht',
-    note: ''
-  },
-  {
-    id: 'anderes',
-    label: 'Anderes',
-    note: 'Falls du noch nicht sicher bist – schreib es auf der nächsten Seite kurz in die Bemerkungen.'
-  }
-];
+/* PLATZHALTER: Text, der bei falscher Antwort erscheint. */
+const SECURITY_HINTS = {
+  question1: 'Frage 1 ist falsch. Tipp: Fang rechts an zu zählen.',
+  question2: 'Frage 2 ist falsch. [Hinweis 2 hier eintragen]',
+  question3: 'Frage 3 ist falsch. [Hinweis 3 hier eintragen]'
+};
 
 
 /* =========================================================
@@ -77,197 +60,64 @@ const $ = (sel) => document.querySelector(sel);
 
 const form = $('#rsvp');
 
-const stepEls = [
-  ...document.querySelectorAll('[data-step]')
-];
+const stepEls = [...document.querySelectorAll('[data-step]')];
 
-let items = OPTIONS.slice();
 let blob = null;
 
 
-/* =========================================================
-   SICHERHEITSFRAGEN
-   ========================================================= */
-
-/* PLATZHALTER: richtige Antwort je Frage eintragen –
-   'a', 'b', 'c' oder 'd' (= value der Antwort in index.html). */
-const SECURITY_ANSWERS = {
-  question1: 'a',
-  question2: 'a',
-  question3: 'a'
-};
-
-/* PLATZHALTER: Text, der bei falscher Antwort erscheint. */
-const SECURITY_HINTS = {
-  question1: 'Frage 1 ist falsch. [Hinweis 1 hier eintragen]',
-  question2: 'Frage 2 ist falsch. [Hinweis 2 hier eintragen]',
-  question3: 'Frage 3 ist falsch. [Hinweis 3 hier eintragen]'
-};
-
-
-function validateSecurityQuestions() {
-
-  const q1 = form.querySelector(
-    'input[name="question1"]:checked'
-  );
-
-  const q2 = form.querySelector(
-    'input[name="question2"]:checked'
-  );
-
-  const q3 = form.querySelector(
-    'input[name="question3"]:checked'
-  );
-
-
-  if (!q1 || !q2 || !q3) {
-    return 'Beantworte alli drü Frage richtig zum witer cho';
-  }
-
-
-  if (q1.value !== SECURITY_ANSWERS.question1) {
-    return SECURITY_HINTS.question1;
-  }
-
-
-  if (q2.value !== SECURITY_ANSWERS.question2) {
-    return SECURITY_HINTS.question2;
-  }
-
-
-  if (q3.value !== SECURITY_ANSWERS.question3) {
-    return SECURITY_HINTS.question3;
-  }
-
-
-  return null;
-}
-
-
-/* =========================================================
-   GRUNDPRÜFUNG
-   ========================================================= */
-
 if (!form) {
 
-  console.error(
-    'FEHLER: #rsvp wurde nicht gefunden.'
-  );
+  console.error('FEHLER: #rsvp wurde nicht gefunden.');
 
 } else {
 
 
   /* =======================================================
-     TITEL / META
+     TITEL & LINKS
      ======================================================= */
 
-  if ($('#title')) {
-    $('#title').textContent = EVENT.title;
-  }
+  $('#title').textContent = EVENT.title;
 
-  
-
-  if ($('#choice-title')) {
-    $('#choice-title').textContent = CHOICE_TITLE;
-  }
-
-
-  /* Termin (für alle gleich) und WhatsApp-Link */
-
-  if ($('#calendar')) {
-    $('#calendar').href = TERMIN_DATEI;
-  }
-
-  if ($('#whatsapp') && WHATSAPP_LINK) {
-    $('#whatsapp').href = WHATSAPP_LINK;
-    $('#whatsapp').hidden = false;
-  }
+  $('#calendar').href = TERMIN_DATEI;
 
 
   /* =======================================================
-     VERBINDUNG ZUM APPS SCRIPT
+     VERBINDUNG ZUM APPS SCRIPT (JSONP)
 
      Apps Script beantwortet keinen CORS-Preflight und die
-     /exec-Adresse leitet um. Mit JSONP umgeht man beides:
-     das Skript ruft unsere Callback-Funktion selbst auf.
+     /exec-Adresse leitet um. Mit JSONP umgeht man beides.
      ======================================================= */
 
   function api(params, timeoutMs) {
 
     return new Promise((resolve, reject) => {
 
-      const cb =
-        'cb_' +
-        Math.random()
-          .toString(36)
-          .slice(2);
-
-
-      const script =
-        document.createElement('script');
-
-
-      let timer = null;
-
+      const cb = 'cb_' + Math.random().toString(36).slice(2);
+      const script = document.createElement('script');
 
       const cleanup = () => {
-
-        if (timer) {
-          clearTimeout(timer);
-        }
-
+        clearTimeout(timer);
         delete window[cb];
-
         script.remove();
-
       };
-
 
       window[cb] = (data) => {
-
         cleanup();
-
         resolve(data);
-
       };
-
 
       script.onerror = () => {
-
         cleanup();
-
-        reject(
-          new Error('Keine Verbindung zum Anmelde-Sheet')
-        );
-
+        reject(new Error('Keine Verbindung zum Anmelde-Sheet'));
       };
 
+      /* Ohne Zeitlimit haengt die Seite, wenn Google nicht antwortet. */
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error('Zeitüberschreitung beim Anmelde-Sheet'));
+      }, timeoutMs || 15000);
 
-      /* Ohne Zeitlimit haengt die Seite, wenn Google gar
-         nicht erst antwortet (z. B. alte Bereitstellung). */
-
-      timer = setTimeout(
-        () => {
-
-          cleanup();
-
-          reject(
-            new Error('Zeitüberschreitung beim Anmelde-Sheet')
-          );
-
-        },
-        timeoutMs || 15000
-      );
-
-
-      script.src =
-        ENDPOINT +
-        '?' +
-        new URLSearchParams({
-          ...params,
-          callback: cb
-        });
-
+      script.src = ENDPOINT + '?' + new URLSearchParams({ ...params, callback: cb });
 
       document.body.appendChild(script);
 
@@ -281,72 +131,35 @@ if (!form) {
      ======================================================= */
 
   function error(msg) {
-
-    if ($('#error')) {
-      $('#error').textContent = msg || '';
-    }
-
+    $('#error').textContent = msg || '';
   }
 
-
   function status(msg) {
-
-    if ($('#status')) {
-      $('#status').textContent = msg || '';
-    }
-
+    $('#status').textContent = msg || '';
   }
 
 
   /* =======================================================
      VERBINDUNGSTEST BEIM LADEN
-
-     Meldet sich nur, wenn etwas nicht stimmt – dann weisst du
-     sofort, dass die ENDPOINT-URL erneuert werden muss.
      ======================================================= */
-
-  let online = false;
-
 
   async function checkConnection() {
 
     try {
 
-      const res = await api(
-        { action: 'ping' },
-        10000
-      );
-
+      const res = await api({ action: 'ping' }, 10000);
 
       if (res && res.ok) {
-
-        online = true;
-
         status('');
-
-        console.log(
-          'Verbindung zum Anmelde-Sheet steht.',
-          res
-        );
-
+        console.log('Verbindung zum Anmelde-Sheet steht.', res);
         return;
-
       }
 
-
-      throw new Error(
-        (res && res.error) || 'unbekannte Antwort'
-      );
-
+      throw new Error((res && res.error) || 'unbekannte Antwort');
 
     } catch (err) {
 
-      online = false;
-
-      console.error(
-        'Verbindung zum Anmelde-Sheet fehlgeschlagen:',
-        err
-      );
+      console.error('Verbindung zum Anmelde-Sheet fehlgeschlagen:', err);
 
       status(
         'Hinweis: Die Verbindung zur Anmeldeliste antwortet gerade nicht. ' +
@@ -357,224 +170,31 @@ if (!form) {
 
   }
 
-
   checkConnection();
 
 
   /* =======================================================
-     AUSWAHL ANZEIGEN
-     ======================================================= */
-
-  function renderChoices() {
-
-    if (!$('#choices')) {
-      return;
-    }
-
-
-    const keep = getChoices();
-
-
-    const type =
-      CHOICE_MODE === 'single'
-        ? 'radio'
-        : 'checkbox';
-
-
-    $('#choices').innerHTML =
-
-      items
-        .map((i) => {
-
-          const checked =
-            keep.includes(i.id)
-              ? ' checked'
-              : '';
-
-
-          return `
-            <label class="choice">
-
-              <input
-                type="${type}"
-                name="choice"
-                value="${escapeHtml(i.id)}"${checked}
-              >
-
-              <span>
-                ${escapeHtml(i.label)}
-                ${
-                  i.note
-                    ? `<small>${escapeHtml(i.note)}</small>`
-                    : ''
-                }
-              </span>
-
-            </label>
-          `;
-
-        })
-        .join('');
-
-
-    /* Bei "Anderes" wird die Bemerkung gebraucht. */
-
-    $('#choices')
-      .querySelectorAll('input[name="choice"]')
-      .forEach(
-        (el) => {
-
-          el.addEventListener(
-            'change',
-            updateRemarksHint
-          );
-
-        }
-      );
-
-
-    updateRemarksHint();
-
-  }
-
-
-  function needsRemarks() {
-
-    return getChoices().includes('anderes');
-
-  }
-
-
-  function updateRemarksHint() {
-
-    if (!$('#remarks-hint')) {
-      return;
-    }
-
-
-    $('#remarks-hint').textContent =
-      needsRemarks()
-        ? '(bitte ausfüllen)'
-        : '(optional)';
-
-  }
-
-
-  /* =======================================================
-     HTML ESCAPEN
-     ======================================================= */
-
-  function escapeHtml(s) {
-
-    return String(s).replace(
-      /[&<>"]/g,
-      (c) => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;'
-      }[c])
-    );
-
-  }
-
-
-  /* =======================================================
-     AUSWAHL AUSLESEN
-     ======================================================= */
-
-  function getChoices() {
-
-    return [
-      ...form.querySelectorAll(
-        'input[name="choice"]:checked'
-      )
-    ].map(
-      (el) => el.value
-    );
-
-  }
-
-
-  /* =======================================================
-     AUSWAHL-NAMEN
-     ======================================================= */
-
-  function labelsFor(ids) {
-
-    return ids
-      .map(
-        (id) => {
-
-          const found =
-            items.find(
-              (i) => i.id === id
-            );
-
-
-          return found
-            ? found.label
-            : id;
-
-        }
-      )
-      .join('; ');
-
-  }
-
-
-  /* =======================================================
      SCHRITTE
+     0 = Sicherheitsfragen, 1 = Name, 2 = Bemerkungen
      ======================================================= */
 
   let step = 0;
 
-
   function show(i) {
-
-    if (
-      i < 0 ||
-      i >= stepEls.length
-    ) {
-
-      console.error(
-        'Ungültiger Schritt:',
-        i
-      );
-
-      return;
-
-    }
-
 
     step = i;
 
+    stepEls.forEach((el, index) => {
+      el.hidden = index !== i;
+    });
 
-    stepEls.forEach(
-      (el, index) => {
-
-        el.hidden = index !== i;
-
-      }
-    );
-
-
-    if ($('#progress')) {
-
-      $('#progress').textContent =
-        `Schritt ${i + 1} von ${stepEls.length}`;
-
-    }
-
+    $('#progress').textContent = `Schritt ${i + 1} von ${stepEls.length}`;
 
     error('');
 
-
-    const first =
-      stepEls[i].querySelector(
-        'input:not([type="radio"]):not([type="checkbox"]), textarea, select'
-      );
-
+    const first = stepEls[i].querySelector(
+      'input:not([type="radio"]):not([type="checkbox"]), textarea'
+    );
 
     if (first) {
       first.focus();
@@ -587,82 +207,44 @@ if (!form) {
      VALIDIERUNG
      ======================================================= */
 
-  function validate(i) {
+  function validateSecurityQuestions() {
 
+    const answers = ['question1', 'question2', 'question3'].map((q) =>
+      form.querySelector(`input[name="${q}"]:checked`)
+    );
 
-    /* -----------------------------------------------------
-       SCHRITT 1 – Sicherheitsfragen
-       ----------------------------------------------------- */
-
-    if (i === 0) {
-
-      return validateSecurityQuestions();
-
+    if (answers.some((a) => !a)) {
+      return 'Beantworte alle drei Fragen, um weiterzukommen.';
     }
 
+    for (const a of answers) {
+      if (a.value !== SECURITY_ANSWERS[a.name]) {
+        return SECURITY_HINTS[a.name];
+      }
+    }
 
-    /* -----------------------------------------------------
-       SCHRITT 2 – Name und Lieblingslied
-       ----------------------------------------------------- */
+    return null;
+
+  }
+
+
+  function validate(i) {
+
+    if (i === 0) {
+      return validateSecurityQuestions();
+    }
 
     if (i === 1) {
 
       if (!$('#vorname').value.trim()) {
-        return 'Din Vorname:';
+        return 'Bitte deinen Vornamen eintragen.';
       }
-
 
       if (!$('#nachname').value.trim()) {
-        return 'Din Nachname:';
+        return 'Bitte deinen Nachnamen eintragen.';
       }
 
-
-      return null;
-
     }
-
-
-    /* -----------------------------------------------------
-       SCHRITT 3 – Auswahl
-       ----------------------------------------------------- */
-
-    if (i === 2) {
-
-      if (
-        CHOICE_REQUIRED &&
-        !getChoices().length
-      ) {
-
-        return 'Bitte ankreuze:';
-
-      }
-
-
-      return null;
-
-    }
-
-
-    /* -----------------------------------------------------
-       SCHRITT 4 – Bemerkung
-       ----------------------------------------------------- */
-
-    if (i === 3) {
-
-      if (
-        needsRemarks() &&
-        !$('#remarks').value.trim()
-      ) {
-
-        return 'Du hast "Anderes" gewählt – bitte kurz in die Bemerkung schreiben.';
-
-      }
-
-
-      return null;
-
-    }
-
 
     return null;
 
@@ -670,365 +252,139 @@ if (!form) {
 
 
   /* =======================================================
-     WEITER-BUTTONS
+     WEITER / ZURÜCK
      ======================================================= */
 
-  form.querySelectorAll('[data-next]').forEach(
-    (button) => {
+  form.querySelectorAll('[data-next]').forEach((button) => {
 
-      button.addEventListener(
-        'click',
-        () => {
+    button.addEventListener('click', () => {
 
-          const problem = validate(step);
+      const problem = validate(step);
 
+      if (problem) {
+        error(problem);
+        return;
+      }
 
-          if (problem) {
+      show(step + 1);
 
-            error(problem);
+    });
 
-            return;
-
-          }
-
-
-          show(step + 1);
-
-        }
-      );
-
-    }
-  );
+  });
 
 
-  /* =======================================================
-     ZURÜCK-BUTTONS
-     ======================================================= */
+  form.querySelectorAll('[data-back]').forEach((button) => {
 
-  form.querySelectorAll('[data-back]').forEach(
-    (button) => {
+    button.addEventListener('click', () => {
+      show(step - 1);
+    });
 
-      button.addEventListener(
-        'click',
-        () => {
+  });
 
-          show(step - 1);
-
-        }
-      );
-
-    }
-  );
-
-
-  /* =======================================================
-     START
-     ======================================================= */
-
-  renderChoices();
 
   show(0);
 
 
   /* =======================================================
-     ABSENDEN
+     ABSENDEN = ANMELDEN
+     Wer abschickt, ist angemeldet. Eine Abmeldung gibt es nicht.
      ======================================================= */
 
-  form.addEventListener(
-    'submit',
-    async (e) => {
+  form.addEventListener('submit', async (e) => {
 
-      e.preventDefault();
+    e.preventDefault();
 
-
-      const problem = validate(3);
-
-
+    for (let i = 0; i < stepEls.length; i++) {
+      const problem = validate(i);
       if (problem) {
-
+        show(i);
         error(problem);
-
         return;
-
       }
-
-
-      const button =
-        form.querySelector(
-          'button[type="submit"]'
-        );
-
-
-      const ids = getChoices();
-
-
-      const vorname =
-        $('#vorname').value.trim();
-
-      const nachname =
-        $('#nachname').value.trim();
-
-
-      const data = {
-
-        vorname: vorname,
-
-        nachname: nachname,
-
-        /* zusammengesetzt, damit die Tabelle auch eine
-           fertige Namensspalte hat */
-        name: (vorname + ' ' + nachname).trim(),
-
-       
-
-        remarks:
-          $('#remarks').value.trim(),
-
-        choices:
-          ids.join(','),
-
-        choiceText:
-          labelsFor(ids)
-
-      };
-
-
-      button.disabled = true;
-
-      error('');
-
-      status('Anmeldung wird gesendet …');
-
-
-      let res;
-
-
-      try {
-
-        res = await api(
-          {
-            action: 'submit',
-            ...data
-          },
-          20000
-        );
-
-
-      } catch (err) {
-
-        console.error(err);
-
-        status('');
-
-
-        error(
-          'Senden hat nicht geklappt – die Anmeldeliste ist nicht erreichbar. ' +
-          'Bitte nochmal versuchen oder kurz Bescheid geben.'
-        );
-
-
-        button.disabled = false;
-
-        return;
-
-      }
-
-
-      if (!res || !res.ok) {
-
-        button.disabled = false;
-
-        status('');
-
-
-        error(
-          'Senden hat nicht geklappt: ' +
-          ((res && res.error) || 'unbekannt')
-        );
-
-
-        return;
-
-      }
-
-
-      /* ---------------------------------------------------
-         Erfolgreich
-         --------------------------------------------------- */
-
-      status('');
-
-      form.hidden = true;
-
-
-      if ($('#progress')) {
-        $('#progress').hidden = true;
-      }
-
-
-      $('#step-done').hidden = false;
-
-
-      /* Bei einer Absage nur danke sagen – kein Termin, keine Übersicht. */
-
-      if (ids.includes('absage')) {
-
-        $('#done-title').textContent = 'Danke für deine Rückmeldung';
-
-        $('#ticket').hidden = true;
-
-        $('#download').hidden = true;
-
-        $('#calendar').hidden = true;
-
-        return;
-
-      }
-
-
-      const ok = await drawTicket($('#ticket'));
-
-
-      if (!ok) {
-
-        /* uebersicht.png fehlt noch -> Bild und Knopf ausblenden */
-        $('#ticket').hidden = true;
-
-        $('#download').hidden = true;
-
-        return;
-
-      }
-
-
-      blob =
-        await new Promise(
-          (done) => {
-
-            $('#ticket').toBlob(
-              done,
-              'image/png'
-            );
-
-          }
-        );
-
-    }
-  );
-
-
-  /* =======================================================
-     ÜBERSICHT BILD
-     ======================================================= */
-
-  /* Schriftgroesse so lange verkleinern, bis der Text passt. */
-  function fitFont(ctx, text, maxWidth, size, weight) {
-
-    let s = size;
-
-
-    while (s > 18) {
-
-      ctx.font =
-        `${weight} ${s}px system-ui, sans-serif`;
-
-
-      if (ctx.measureText(text).width <= maxWidth) {
-        break;
-      }
-
-
-      s -= 2;
-
     }
 
+    const button = form.querySelector('button[type="submit"]');
 
-    return s;
+    const vorname = $('#vorname').value.trim();
+    const nachname = $('#nachname').value.trim();
 
-  }
+    const data = {
+      vorname: vorname,
+      nachname: nachname,
+      name: (vorname + ' ' + nachname).trim(),
+      remarks: $('#remarks').value.trim()
+    };
 
+    button.disabled = true;
+    error('');
+    status('Anmeldung wird gesendet …');
 
-  /* Text auf mehrere Zeilen umbrechen. */
-  function wrap(ctx, text, maxWidth, maxLines) {
-
-    const words = String(text).split(/\s+/);
-
-    const lines = [];
-
-    let line = '';
-
-
-    words.forEach(
-      (w) => {
-
-        const test = line ? line + ' ' + w : w;
-
-
-        if (
-          ctx.measureText(test).width > maxWidth &&
-          line
-        ) {
-
-          lines.push(line);
-
-          line = w;
-
-        } else {
-
-          line = test;
-
-        }
-
-      }
-    );
-
-
-    if (line) {
-      lines.push(line);
-    }
-
-
-    if (lines.length > maxLines) {
-
-      const cut = lines.slice(0, maxLines);
-
-      cut[maxLines - 1] =
-        cut[maxLines - 1].replace(/\s*\S*$/, '') + ' …';
-
-      return cut;
-
-    }
-
-
-    return lines;
-
-  }
-
-
-  /* Die Übersicht ist ein fertiges Bild (UEBERSICHT_DATEI im Repo).
-     Gibt false zurueck, wenn die Datei (noch) nicht da ist. */
-  async function drawTicket(canvas) {
-
-    const img = new Image();
-
-    img.src = UEBERSICHT_DATEI;
-
+    let res;
 
     try {
 
-      await img.decode();
+      res = await api({ action: 'submit', ...data }, 20000);
 
     } catch (err) {
 
-      console.error(
-        'Übersicht nicht gefunden: ' + UEBERSICHT_DATEI,
-        err
+      console.error(err);
+      status('');
+      error(
+        'Senden hat nicht geklappt – die Anmeldeliste ist nicht erreichbar. ' +
+        'Bitte nochmal versuchen oder kurz Bescheid geben.'
       );
-
-      return false;
+      button.disabled = false;
+      return;
 
     }
 
+    if (!res || !res.ok) {
+
+      status('');
+      error('Senden hat nicht geklappt: ' + ((res && res.error) || 'unbekannt'));
+      button.disabled = false;
+      return;
+
+    }
+
+
+    /* Erfolgreich */
+
+    status('');
+    form.hidden = true;
+    $('#progress').hidden = true;
+    $('#step-done').hidden = false;
+
+    const ok = await drawUebersicht($('#ticket'));
+
+    if (!ok) {
+      /* uebersicht.png fehlt noch -> Bild und Knopf ausblenden */
+      $('#ticket').hidden = true;
+      $('#download').hidden = true;
+      return;
+    }
+
+    blob = await new Promise((done) => $('#ticket').toBlob(done, 'image/png'));
+
+  });
+
+
+  /* =======================================================
+     ÜBERSICHT-BILD
+     Gibt false zurueck, wenn die Datei (noch) nicht da ist.
+     ======================================================= */
+
+  async function drawUebersicht(canvas) {
+
+    const img = new Image();
+    img.src = UEBERSICHT_DATEI;
+
+    try {
+      await img.decode();
+    } catch (err) {
+      console.error('Übersicht nicht gefunden: ' + UEBERSICHT_DATEI, err);
+      return false;
+    }
 
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
@@ -1043,38 +399,21 @@ if (!form) {
      DOWNLOAD
      ======================================================= */
 
-  $('#download').addEventListener(
-    'click',
-    () => {
+  $('#download').addEventListener('click', () => {
 
-      if (!blob) {
-        return;
-      }
-
-
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-
-
-      a.href = url;
-
-      a.download = 'stef60-uebersicht.png';
-
-
-      a.click();
-
-
-      setTimeout(
-        () => {
-          URL.revokeObjectURL(url);
-        },
-        4000
-      );
-
+    if (!blob) {
+      return;
     }
-  );
 
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
 
+    a.href = url;
+    a.download = 'stef60-uebersicht.png';
+    a.click();
+
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+
+  });
 
 }

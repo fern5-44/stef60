@@ -139,37 +139,6 @@ button:focus-visible,
   outline-offset: 2px;
 }
 
-/* Auswahl */
-.choice {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--card);
-  margin-bottom: 8px;
-  cursor: pointer;
-}
-
-.choice input {
-  width: auto;
-  margin: 4px 0 0;
-  flex: none;
-  accent-color: var(--red);
-}
-
-.choice small {
-  display: block;
-  color: var(--muted);
-}
-
-.choice:has(input:checked) {
-  border-color: var(--red);
-  background: var(--red-soft);
-  box-shadow: inset 3px 0 0 var(--red);
-}
-
 /* =========================================================
    TIPPS (Glühbirne bei den Sicherheitsfragen)
    ========================================================= */
