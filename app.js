@@ -15,6 +15,15 @@ const EVENT = {
    ========================================================= */
 
 const TERMIN_DATEI = 'termine.ics';          // Kalendertermin, für alle gleich
+/* Termin für den Google-Kalender-Knopf
+   Format: JJJJMMTT T HHMMSS  (z. B. 20270109T140000 = 9.1.2027, 14:00) */
+const TERMIN = {
+  titel: 'Stefans Geburtstag',
+  start: '20270109T140000',          // PLATZHALTER
+  ende:  '20270109T230000',          // PLATZHALTER
+  ort:   'Adresse hier eintragen',   // PLATZHALTER
+  info:  ''
+};
 const UEBERSICHT_DATEI = 'uebersicht.png';  // Übersicht zum Herunterladen
 
 const MAX_PERSONEN = 5;                    // so viele Personen kann man auf einmal anmelden
@@ -81,6 +90,18 @@ if (!form) {
   $('#title').textContent = EVENT.title;
 
   if ($('#calendar')) $('#calendar').href = TERMIN_DATEI;
+  if ($('#google-calendar')) {
+    $('#google-calendar').href =
+      'https://calendar.google.com/calendar/render?' +
+      new URLSearchParams({
+        action: 'TEMPLATE',
+        text: TERMIN.titel,
+        dates: TERMIN.start + '/' + TERMIN.ende,
+        ctz: 'Europe/Zurich',
+        location: TERMIN.ort,
+        details: TERMIN.info
+      });
+  }
 
 
   /* =======================================================
