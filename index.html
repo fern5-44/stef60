@@ -1,1 +1,544 @@
-# stef60
+<!doctype html>
+<html lang="de">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Stef60 – Anmeldung</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+</head>
+
+
+<body>
+
+  <main>
+
+    <!-- =====================================================
+         KOPF
+         ===================================================== -->
+
+    <h1 id="title"></h1>
+
+    <p id="meta"></p>
+
+    <p
+      id="progress"
+      aria-live="polite">
+    </p>
+
+    <p
+      id="status"
+      role="status">
+    </p>
+
+
+    <!-- =====================================================
+         FORMULAR
+         ===================================================== -->
+
+    <form
+      id="rsvp"
+      novalidate>
+
+
+      <!-- ===================================================
+           SCHRITT 0 – SICHERHEITSFRAGEN
+           =================================================== -->
+
+      <fieldset data-step="0">
+
+        <legend>
+          Ich bin kein Roboter.
+        </legend>
+
+
+        <p>
+          Beantworte alle drei Fragen richtig,
+          um weiterzukommen.
+        </p>
+
+
+        <!-- Frage 1 -----------------------------------------
+             PLATZHALTER: Frage, Tipp und Antworten hier eintragen.
+             Die richtige Antwort (a, b, c oder d) steht in app.js
+             bei SECURITY_ANSWERS.
+             --------------------------------------------------- -->
+
+        <fieldset class="question">
+
+          <legend>
+            <button
+              type="button"
+              class="tipp-btn"
+              data-tipp="tipp1"
+              aria-label="Tipp anzeigen"
+              aria-expanded="false"
+              aria-controls="tipp1">💡</button>Frage 1: [Frage 1 hier eintragen]
+          </legend>
+
+          <div class="tipp-box" id="tipp1" hidden>
+            <p>[Tipp 1 hier eintragen]</p>
+            <button
+              type="button"
+              class="tipp-close"
+              data-tipp-close="tipp1"
+              aria-label="Tipp schliessen">✕</button>
+          </div>
+
+          <label>
+            <input type="radio" name="question1" value="a" />
+            [Antwort A]
+          </label>
+
+          <label>
+            <input type="radio" name="question1" value="b" />
+            [Antwort B]
+          </label>
+
+          <label>
+            <input type="radio" name="question1" value="c" />
+            [Antwort C]
+          </label>
+
+          <label>
+            <input type="radio" name="question1" value="d" />
+            [Antwort D]
+          </label>
+
+        </fieldset>
+
+
+        <!-- Frage 2 -----------------------------------------
+             PLATZHALTER: Frage, Tipp und Antworten hier eintragen.
+             Die richtige Antwort (a, b, c oder d) steht in app.js
+             bei SECURITY_ANSWERS.
+             --------------------------------------------------- -->
+
+        <fieldset class="question">
+
+          <legend>
+            <button
+              type="button"
+              class="tipp-btn"
+              data-tipp="tipp2"
+              aria-label="Tipp anzeigen"
+              aria-expanded="false"
+              aria-controls="tipp2">💡</button>Frage 2: [Frage 2 hier eintragen]
+          </legend>
+
+          <div class="tipp-box" id="tipp2" hidden>
+            <p>[Tipp 2 hier eintragen]</p>
+            <button
+              type="button"
+              class="tipp-close"
+              data-tipp-close="tipp2"
+              aria-label="Tipp schliessen">✕</button>
+          </div>
+
+          <label>
+            <input type="radio" name="question2" value="a" />
+            [Antwort A]
+          </label>
+
+          <label>
+            <input type="radio" name="question2" value="b" />
+            [Antwort B]
+          </label>
+
+          <label>
+            <input type="radio" name="question2" value="c" />
+            [Antwort C]
+          </label>
+
+          <label>
+            <input type="radio" name="question2" value="d" />
+            [Antwort D]
+          </label>
+
+        </fieldset>
+
+
+        <!-- Frage 3 -----------------------------------------
+             PLATZHALTER: Frage, Tipp und Antworten hier eintragen.
+             Die richtige Antwort (a, b, c oder d) steht in app.js
+             bei SECURITY_ANSWERS.
+             --------------------------------------------------- -->
+
+        <fieldset class="question">
+
+          <legend>
+            <button
+              type="button"
+              class="tipp-btn"
+              data-tipp="tipp3"
+              aria-label="Tipp anzeigen"
+              aria-expanded="false"
+              aria-controls="tipp3">💡</button>Frage 3: [Frage 3 hier eintragen]
+          </legend>
+
+          <div class="tipp-box" id="tipp3" hidden>
+            <p>[Tipp 3 hier eintragen]</p>
+            <button
+              type="button"
+              class="tipp-close"
+              data-tipp-close="tipp3"
+              aria-label="Tipp schliessen">✕</button>
+          </div>
+
+          <label>
+            <input type="radio" name="question3" value="a" />
+            [Antwort A]
+          </label>
+
+          <label>
+            <input type="radio" name="question3" value="b" />
+            [Antwort B]
+          </label>
+
+          <label>
+            <input type="radio" name="question3" value="c" />
+            [Antwort C]
+          </label>
+
+          <label>
+            <input type="radio" name="question3" value="d" />
+            [Antwort D]
+          </label>
+
+        </fieldset>
+
+
+        <!-- Weiter ------------------------------------------ -->
+
+        <p class="nav">
+
+          <button
+            type="button"
+            data-next>
+            Weiter
+          </button>
+
+        </p>
+
+      </fieldset>
+
+
+      <!-- ===================================================
+           SCHRITT 1 – ANMELDUNG
+           =================================================== -->
+
+      <fieldset
+        data-step="1"
+        hidden>
+
+        <legend>
+          Deine Angaben
+        </legend>
+
+
+        <p>
+
+          <label for="vorname">
+            Vorname
+          </label>
+
+          <input
+            id="vorname"
+            name="vorname"
+            type="text"
+            autocomplete="given-name"
+            required
+          />
+
+        </p>
+
+
+        <p>
+
+          <label for="nachname">
+            Nachname
+          </label>
+
+          <input
+            id="nachname"
+            name="nachname"
+            type="text"
+            autocomplete="family-name"
+            required
+          />
+
+        </p>
+
+
+        <p>
+
+          <label for="lieblingslied">
+            Dis Lieblingslied
+          </label>
+
+          <input
+            id="lieblingslied"
+            name="lieblingslied"
+            type="text"
+            autocomplete="off"
+            placeholder="Titel – Interpret"
+            required
+          />
+
+        </p>
+
+        <p>
+
+          <label for="funfact">
+            En Funfact über dich (bruchi für es Spili)
+          </label>
+
+          <input
+            id="funfact"
+            name="funfact"
+            type="text"
+            autocomplete="off"
+            required
+          />
+
+        </p>
+        
+        <p>
+
+          <label for="zutat">
+            Dini Lieblingszuetat uf dPizza
+          </label>
+
+          <input
+            id="zutat"
+            name="zutat"
+            type="text"
+            autocomplete="off"
+            required
+          />
+
+        </p>
+
+
+        <p class="nav">
+
+          <button
+            type="button"
+            data-back>
+            Zurück
+          </button>
+
+
+          <button
+            type="button"
+            data-next>
+            Weiter
+          </button>
+
+        </p>
+
+      </fieldset>
+
+
+      <!-- ===================================================
+           SCHRITT 2 – BIST DU DABEI
+           =================================================== -->
+
+      <fieldset
+        data-step="2"
+        hidden>
+
+        <legend id="choice-title"></legend>
+
+
+        <div id="choices"></div>
+
+
+        <p class="nav">
+
+          <button
+            type="button"
+            data-back>
+            Zurück
+          </button>
+
+
+          <button
+            type="button"
+            data-next>
+            Weiter
+          </button>
+
+        </p>
+
+      </fieldset>
+
+
+      <!-- ===================================================
+           SCHRITT 3 – BEMERKUNGEN
+           =================================================== -->
+
+      <fieldset
+        data-step="3"
+        hidden>
+
+        <legend>
+          Noch etwas?
+        </legend>
+
+
+        <p>
+
+          <label for="remarks">
+
+            Bemerkungen
+
+            <span
+              class="opt"
+              id="remarks-hint">
+              (optional)
+            </span>
+
+          </label>
+
+
+          <textarea
+            id="remarks"
+            name="remarks"
+            rows="5"
+            maxlength="400"></textarea>
+
+        </p>
+
+
+        <p class="nav">
+
+          <button
+            type="button"
+            data-back>
+            Zurück
+          </button>
+
+
+          <button
+            type="submit">
+            Anmeldung abschicken
+          </button>
+
+        </p>
+
+      </fieldset>
+
+
+      <!-- ===================================================
+           FEHLER
+           =================================================== -->
+
+      <p
+        id="error"
+        role="alert">
+      </p>
+
+
+    </form>
+
+
+    <!-- =====================================================
+         NACH DEM ABSENDEN
+         ===================================================== -->
+
+    <section
+      id="step-done"
+      hidden>
+
+
+      <h2 id="done-title">
+        Angemeldet
+      </h2>
+
+
+      <!-- Übersicht: Bild wird in app.js geladen (UEBERSICHT_DATEI).
+           Fehlt die Datei noch, wird dieser Bereich ausgeblendet. -->
+      <canvas
+        id="ticket"
+        width="1080"
+        height="1350"
+        role="img"
+        aria-label="Übersicht zum Fest">
+      </canvas>
+
+
+      <p class="actions">
+
+        <button
+          type="button"
+          id="download">
+          Übersicht herunterladen
+        </button>
+
+
+        <!-- Termin für alle gleich – Datei: siehe TERMIN_DATEI in app.js -->
+        <a
+          class="btn"
+          id="calendar"
+          href="termin.ics"
+          download>
+          Termin in Kalender eintragen
+        </a>
+
+
+        <!-- WhatsApp-Link: siehe WHATSAPP_LINK in app.js
+             (leer = Knopf wird nicht angezeigt) -->
+        <a
+          class="btn"
+          id="whatsapp"
+          target="_blank"
+          rel="noopener"
+          href="#"
+          hidden>
+          WhatsApp-Gruppe beitreten
+        </a>
+
+      </p>
+
+    </section>
+
+
+  </main>
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+       ===================================================== -->
+
+  <script src="app.js"></script>
+
+  <!-- Tipp auf-/zuklappen -->
+  <script>
+    document.addEventListener("click", function (e) {
+      var open = e.target.closest("[data-tipp]");
+      var close = e.target.closest("[data-tipp-close]");
+
+      if (open) {
+        var box = document.getElementById(open.dataset.tipp);
+        var show = box.hidden;
+        box.hidden = !show;
+        open.setAttribute("aria-expanded", show ? "true" : "false");
+      }
+
+      if (close) {
+        var box2 = document.getElementById(close.dataset.tippClose);
+        var btn = document.querySelector('[data-tipp="' + close.dataset.tippClose + '"]');
+        box2.hidden = true;
+        btn.setAttribute("aria-expanded", "false");
+        btn.focus();
+      }
+    });
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,340 @@
+/* =========================================================
+   FARBEN – dunkel, Weinrot, schlicht
+   ========================================================= */
+
+:root {
+  color-scheme: dark;
+  --bg: #1a1214;          /* sehr dunkles Rotbraun statt Schwarz */
+  --card: #241a1c;
+  --line: #3e2c2f;
+  --ink: #f1e7e4;
+  --muted: #b09d99;
+  --red: #a3303a;          /* Weinrot */
+  --red-dark: #86252e;
+  --red-soft: #3a2024;     /* Markierungen */
+  --red-light: #e48a8f;    /* Text auf dunklem Grund */
+  --error: #f0907f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+main {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 48px 20px 80px;
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 6vw, 2.75rem);
+  line-height: 1.15;
+  color: var(--ink);
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--red);
+}
+
+h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+#meta,
+#progress {
+  color: var(--muted);
+}
+
+#status:not(:empty) {
+  color: var(--red-light);
+}
+
+fieldset {
+  border: 0;
+  margin: 24px 0 0;
+  padding: 0;
+  min-width: 0;
+}
+
+legend {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+/* Sicherheitsfragen */
+fieldset.question {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--red);
+  border-radius: 6px;
+  background: var(--card);
+}
+
+fieldset.question legend {
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+fieldset.question label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+}
+
+fieldset.question input {
+  width: auto;
+  flex: none;
+  accent-color: var(--red);
+}
+
+label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.opt {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  font: inherit;
+  color: var(--ink);
+  background: var(--card);
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--red-light);
+  outline-offset: 2px;
+}
+
+/* Auswahl */
+.choice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--card);
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.choice input {
+  width: auto;
+  margin: 4px 0 0;
+  flex: none;
+  accent-color: var(--red);
+}
+
+.choice small {
+  display: block;
+  color: var(--muted);
+}
+
+.choice:has(input:checked) {
+  border-color: var(--red);
+  background: var(--red-soft);
+  box-shadow: inset 3px 0 0 var(--red);
+}
+
+/* =========================================================
+   TIPPS (Glühbirne bei den Sicherheitsfragen)
+   ========================================================= */
+
+.tipp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9em;
+  height: 1.9em;
+  margin-right: .5em;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--red-soft);
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.tipp-btn:hover,
+.tipp-btn[aria-expanded="true"] {
+  background: var(--red-dark);
+  border-color: var(--red-dark);
+}
+
+.tipp-box {
+  position: relative;
+  margin: .5em 0 1em;
+  padding: .8em 2.6em .8em 1em;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--red-soft);
+}
+
+.tipp-box p {
+  margin: 0;
+}
+
+.tipp-close {
+  position: absolute;
+  top: .4em;
+  right: .4em;
+  width: 2em;
+  height: 2em;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tipp-close:hover {
+  background: rgba(255, 255, 255, .08);
+  color: var(--ink);
+}
+
+/* =========================================================
+   KNOEPFE
+   ========================================================= */
+
+button,
+.btn {
+  display: inline-block;
+  font: inherit;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  padding: 11px 18px;
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  background: var(--red);
+  color: #fff;
+  cursor: pointer;
+}
+
+button:hover,
+.btn:hover {
+  background: var(--red-dark);
+  border-color: var(--red-dark);
+}
+
+/* sekundaere Aktionen */
+button[data-back],
+#download,
+#load,
+a.btn {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+button[data-back]:hover,
+#download:hover,
+#load:hover,
+a.btn:hover {
+  background: var(--red-soft);
+  border-color: var(--red);
+  color: var(--ink);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.nav,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+#error:empty {
+  display: none;
+}
+
+#error {
+  color: var(--error);
+  border-left: 3px solid var(--error);
+  padding-left: 10px;
+  margin-top: 16px;
+}
+
+/* Übersicht-Bild: hier skalieren, nicht die Canvas-Groesse aendern,
+   sonst wird das heruntergeladene Bild klein. */
+#ticket {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+/* Admin-Vorschau */
+#preview {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--line);
+  padding: 7px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  white-space: nowrap;
+  color: var(--red-light);
+}
+
+[hidden] {
+  display: none !important;
+}
