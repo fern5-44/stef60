@@ -618,19 +618,6 @@ if (!form) {
       }
 
 
-      if (!$('#lieblingslied').value.trim()) {
-        return 'Din Lieblingssong:';
-      }
-
-      if (!$('#funfact').value.trim()) {
-        return 'En Funfact über dich:';
-      }
-
-      if (!$('#zutat').value.trim()) {
-        return 'Dini Lieblingszuetat uf de Pizza:';
-      }
-
-
       return null;
 
     }
@@ -793,14 +780,7 @@ if (!form) {
            fertige Namensspalte hat */
         name: (vorname + ' ' + nachname).trim(),
 
-        lieblingslied:
-          $('#lieblingslied').value.trim(),
-
-        funfact:
-          $('#funfact').value.trim(),
-
-        zutat:
-          $('#zutat').value.trim(),
+       
 
         remarks:
           $('#remarks').value.trim(),
