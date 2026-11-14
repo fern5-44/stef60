@@ -42,15 +42,15 @@ const ENDPOINT =
 
 const SECURITY_ANSWERS = {
   question1: 'd',   // 111100 = 60 im Binärsystem
-  question2: 'a',   // PLATZHALTER – richtige Antwort eintragen
-  question3: 'a'    // PLATZHALTER – richtige Antwort eintragen
+  question2: 'b',   // PLATZHALTER – richtige Antwort eintragen
+  question3: 'c'    // PLATZHALTER – richtige Antwort eintragen
 };
 
 /* PLATZHALTER: Text, der bei falscher Antwort erscheint. */
 const SECURITY_HINTS = {
   question1: 'Frage 1 ist falsch. Tipp: Fang rechts an zu zählen.',
-  question2: 'Frage 2 ist falsch. [Hinweis 2 hier eintragen]',
-  question3: 'Frage 3 ist falsch. [Hinweis 3 hier eintragen]'
+  question2: 'Frage 2 ist falsch. Tipp:',
+  question3: 'Frage 3 ist falsch. Tipp:'
 };
 
 
