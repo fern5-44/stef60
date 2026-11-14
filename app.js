@@ -17,7 +17,7 @@ const EVENT = {
 const TERMIN_DATEI = 'termin.ics';          // Kalendertermin, für alle gleich
 const UEBERSICHT_DATEI = 'uebersicht.png';  // Übersicht zum Herunterladen
 
-const MAX_PERSONEN = 10;                    // so viele Personen kann man auf einmal anmelden
+const MAX_PERSONEN = 5;                    // so viele Personen kann man auf einmal anmelden
 
 
 /* =========================================================
