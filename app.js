@@ -80,7 +80,7 @@ if (!form) {
 
   $('#title').textContent = EVENT.title;
 
-  $('#calendar').href = TERMIN_DATEI;
+  if ($('#calendar')) $('#calendar').href = TERMIN_DATEI;
 
 
   /* =======================================================
