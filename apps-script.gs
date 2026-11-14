@@ -23,26 +23,13 @@ const TOKEN = 'QLDJFLAHEN7363KDLA'; // nur fuer den Export in admin.html
 /* An diese Adresse geht bei jeder Anmeldung eine Mail. */
 const MAIL_EMPFAENGER = 'serni4333@gmail.com';
 
-/* Die auswaehlbaren Optionen. Die ids muessen mit OPTIONS in app.js
-   uebereinstimmen. Eine id niemals nachtraeglich aendern, sonst passen
-   die schon gespeicherten Zeilen nicht mehr dazu. */
-const OPTIONS = [
-  { id: 'dabei', label: 'Ja, ich bin dabei' },
-  { id: 'absage', label: 'Leider nicht' },
-  { id: 'anderes', label: 'Anderes' },
-];
 
 const COLUMNS = [
   'sentAt',
   'vorname',
   'nachname',
   'name',
-  'lieblingslied',
-  'zutat',
-  'choices',
-  'choiceText',
   'remarks',
-  'funfact',
 ];
 
 function doGet(e) {
@@ -77,22 +64,16 @@ function submit(e, p) {
       .join('; ');
 
     const name = String(p.name || (vorname + ' ' + nachname)).trim();
-    const lieblingslied = String(p.lieblingslied || '').trim();
-    const zutat = String(p.zutat || '').trim();
     const remarks = String(p.remarks || '').trim();
-    const funfact = String(p.funfact || '').trim();
 
     sheet().appendRow([
       new Date(),
       vorname,
       nachname,
       name,
-      lieblingslied,
-      zutat,
       wanted.join(','),
       text,
       remarks,
-      funfact,
     ]);
 
     /* Mail an dich. Ein Fehler hier darf die Anmeldung nicht
@@ -101,10 +82,7 @@ function submit(e, p) {
       sendeMail_({
         name: name,
         choiceText: text,
-        lieblingslied: lieblingslied,
-        zutat: zutat,
         remarks: remarks,
-        funfact: funfact,
       });
     } catch (mailErr) {
       console.error('Mail fehlgeschlagen: ' + mailErr);
@@ -124,9 +102,6 @@ function sendeMail_(d) {
     'Neue Anmeldung\n\n' +
     'Name: '          + (d.name          || '-') + '\n' +
     'Kommt: '         + (d.choiceText    || '-') + '\n' +
-    'Lieblingslied: ' + (d.lieblingslied || '-') + '\n' +
-    'Funfact: '       + (d.funfact       || '-') + '\n' +
-    'Pizza-Zutat: '   + (d.zutat         || '-') + '\n' +
     'Bemerkung: '     + (d.remarks       || '-') + '\n';
 
   MailApp.sendEmail(
@@ -141,10 +116,7 @@ function testMail() {
   sendeMail_({
     name: 'Test Person',
     choiceText: 'Ja, ich bin dabei',
-    lieblingslied: 'Testlied – Testinterpret',
-    zutat: 'Ananas',
     remarks: 'Das ist nur ein Test.',
-    funfact: 'Test-Funfact',
   });
 }
 
