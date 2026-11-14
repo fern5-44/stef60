@@ -238,36 +238,21 @@
 
         <p>
 
-          <label for="vorname">
-            Vorname
+          <label for="anzahl">
+            Wie viele Personen meldest du an?
           </label>
 
-          <input
-            id="vorname"
-            name="vorname"
-            type="text"
-            autocomplete="given-name"
-            required
-          />
+          <!-- Optionen werden in app.js erzeugt (MAX_PERSONEN) -->
+          <select
+            id="anzahl"
+            name="anzahl">
+          </select>
 
         </p>
 
 
-        <p>
-
-          <label for="nachname">
-            Nachname
-          </label>
-
-          <input
-            id="nachname"
-            name="nachname"
-            type="text"
-            autocomplete="family-name"
-            required
-          />
-
-        </p>
+        <!-- Hier erscheinen pro Person ein Vorname- und ein Nachname-Feld -->
+        <div id="personen"></div>
 
 
         <p class="nav">

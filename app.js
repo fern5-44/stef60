@@ -17,6 +17,8 @@ const EVENT = {
 const TERMIN_DATEI = 'termin.ics';          // Kalendertermin, für alle gleich
 const UEBERSICHT_DATEI = 'uebersicht.png';  // Übersicht zum Herunterladen
 
+const MAX_PERSONEN = 10;                    // so viele Personen kann man auf einmal anmelden
+
 
 /* =========================================================
    APPS SCRIPT  ***HIER DIE VERBINDUNG ZUM SHEET***
@@ -40,10 +42,16 @@ const ENDPOINT =
 
 const SECURITY_ANSWERS = {
   question1: 'd',   // 111100 = 60 im Binärsystem
-  question2: 'b',   // PLATZHALTER – richtige Antwort eintragen
-  question3: 'c'    // PLATZHALTER – richtige Antwort eintragen
+  question2: 'a',   // PLATZHALTER – richtige Antwort eintragen
+  question3: 'a'    // PLATZHALTER – richtige Antwort eintragen
 };
 
+/* PLATZHALTER: Text, der bei falscher Antwort erscheint. */
+const SECURITY_HINTS = {
+  question1: 'Frage 1 ist falsch. Tipp: Fang rechts an zu zählen.',
+  question2: 'Frage 2 ist falsch. [Hinweis 2 hier eintragen]',
+  question3: 'Frage 3 ist falsch. [Hinweis 3 hier eintragen]'
+};
 
 
 /* =========================================================
@@ -73,6 +81,81 @@ if (!form) {
   $('#title').textContent = EVENT.title;
 
   $('#calendar').href = TERMIN_DATEI;
+
+
+  /* =======================================================
+     MEHRERE PERSONEN
+     Auswahl "Anzahl" -> so viele Namensfelder erscheinen.
+     Schon eingetippte Namen bleiben erhalten, wenn man die
+     Anzahl aendert.
+     ======================================================= */
+
+  for (let n = 1; n <= MAX_PERSONEN; n++) {
+    const opt = document.createElement('option');
+    opt.value = n;
+    opt.textContent = n === 1 ? '1 Person' : n + ' Personen';
+    $('#anzahl').appendChild(opt);
+  }
+
+  function personenFelder() {
+
+    const anzahl = Number($('#anzahl').value) || 1;
+    const alt = getPersonen(true);
+
+    let html = '';
+
+    for (let i = 0; i < anzahl; i++) {
+
+      const p = alt[i] || { vorname: '', nachname: '' };
+      const titel = anzahl === 1 ? 'Dein Name' : 'Person ' + (i + 1);
+
+      html += `
+        <div class="person">
+          <h3>${titel}</h3>
+          <div class="person-felder">
+            <p>
+              <label for="vorname-${i}">Vorname</label>
+              <input id="vorname-${i}" class="vorname" type="text"
+                     autocomplete="${i === 0 ? 'given-name' : 'off'}"
+                     value="${escapeHtml(p.vorname)}" />
+            </p>
+            <p>
+              <label for="nachname-${i}">Nachname</label>
+              <input id="nachname-${i}" class="nachname" type="text"
+                     autocomplete="${i === 0 ? 'family-name' : 'off'}"
+                     value="${escapeHtml(p.nachname)}" />
+            </p>
+          </div>
+        </div>`;
+
+    }
+
+    $('#personen').innerHTML = html;
+
+  }
+
+  /* Liest alle Namen aus. alle=false -> nur die sichtbaren Felder. */
+  function getPersonen(alle) {
+
+    const vor = [...document.querySelectorAll('#personen .vorname')];
+    const nach = [...document.querySelectorAll('#personen .nachname')];
+
+    return vor.map((el, i) => ({
+      vorname: el.value.trim(),
+      nachname: (nach[i] ? nach[i].value : '').trim()
+    }));
+
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"]/g, (c) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]
+    ));
+  }
+
+  $('#anzahl').addEventListener('change', personenFelder);
+
+  personenFelder();
 
 
   /* =======================================================
@@ -230,12 +313,23 @@ if (!form) {
 
     if (i === 1) {
 
-      if (!$('#vorname').value.trim()) {
-        return 'Bitte deinen Vornamen eintragen.';
-      }
+      const personen = getPersonen();
+      const mehrere = personen.length > 1;
 
-      if (!$('#nachname').value.trim()) {
-        return 'Bitte deinen Nachnamen eintragen.';
+      for (let k = 0; k < personen.length; k++) {
+
+        const wer = mehrere ? ` bei Person ${k + 1}` : '';
+
+        if (!personen[k].vorname) {
+          $('#vorname-' + k).focus();
+          return `Bitte den Vornamen${wer} eintragen.`;
+        }
+
+        if (!personen[k].nachname) {
+          $('#nachname-' + k).focus();
+          return `Bitte den Nachnamen${wer} eintragen.`;
+        }
+
       }
 
     }
@@ -299,13 +393,12 @@ if (!form) {
 
     const button = form.querySelector('button[type="submit"]');
 
-    const vorname = $('#vorname').value.trim();
-    const nachname = $('#nachname').value.trim();
+    const personen = getPersonen();
 
+    /* Alle Personen gehen in einem Rutsch an das Apps Script,
+       dort wird pro Person eine eigene Zeile angelegt. */
     const data = {
-      vorname: vorname,
-      nachname: nachname,
-      name: (vorname + ' ' + nachname).trim(),
+      personen: JSON.stringify(personen),
       remarks: $('#remarks').value.trim()
     };
 

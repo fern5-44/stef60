@@ -3,6 +3,9 @@
 
    Wer das Formular abschickt, ist angemeldet.
    Es gibt kein Ja/Nein und keine Abmeldung.
+   Werden mehrere Personen auf einmal angemeldet, bekommt jede
+   Person eine eigene Zeile. Die Spalte "angemeldetVon" zeigt,
+   wer die Gruppe angemeldet hat.
 
    Einrichten / aktualisieren:
    1. Google-Tabelle oeffnen -> Erweiterungen -> Apps Script
@@ -19,13 +22,18 @@ const TOKEN = 'QLDJFLAHEN7363KDLA'; // nur fuer den Export in admin.html
 /* An diese Adresse geht bei jeder Anmeldung eine Mail. */
 const MAIL_EMPFAENGER = 'serni4333@gmail.com';
 
+/* Neue Spalten immer nur HINTEN anhaengen, nie dazwischen. */
 const COLUMNS = [
   'sentAt',
   'vorname',
   'nachname',
   'name',
   'remarks',
+  'angemeldetVon',
+  'gruppengroesse',
 ];
+
+const MAX_PERSONEN = 10; // gleich wie in app.js
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
@@ -41,31 +49,31 @@ function submit(e, p) {
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
-    const vorname = String(p.vorname || '').trim();
-    const nachname = String(p.nachname || '').trim();
-    if (!vorname || !nachname) return json(e, { ok: false, error: 'name fehlt' });
+    const personen = lesePersonen_(p);
+    if (!personen.length) return json(e, { ok: false, error: 'name fehlt' });
+    if (personen.length > MAX_PERSONEN) return json(e, { ok: false, error: 'zu viele Personen' });
 
-    const name = String(p.name || (vorname + ' ' + nachname)).trim();
     const remarks = String(p.remarks || '').trim();
+    const jetzt = new Date();
+    const von = personen[0].name;
 
-    /* Reihenfolge = COLUMNS */
-    sheet().appendRow([
-      new Date(),
-      vorname,
-      nachname,
-      name,
-      remarks,
-    ]);
+    /* Eine Zeile pro Person, Reihenfolge = COLUMNS */
+    const rows = personen.map(function (x) {
+      return [jetzt, x.vorname, x.nachname, x.name, remarks, von, personen.length];
+    });
+
+    const sh = sheet();
+    sh.getRange(sh.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
 
     /* Mail an dich. Ein Fehler hier darf die Anmeldung nicht
        kaputt machen – sie ist ja schon gespeichert. */
     try {
-      sendeMail_({ name: name, remarks: remarks });
+      sendeMail_({ personen: personen, remarks: remarks });
     } catch (mailErr) {
       console.error('Mail fehlgeschlagen: ' + mailErr);
     }
 
-    return json(e, { ok: true });
+    return json(e, { ok: true, anzahl: personen.length });
   } catch (err) {
     return json(e, { ok: false, error: String(err) });
   } finally {
@@ -73,24 +81,51 @@ function submit(e, p) {
   }
 }
 
+/* Personen aus der Anfrage lesen. Neu: personen = JSON-Liste.
+   Alt (eine Person): vorname + nachname – bleibt zur Sicherheit erhalten. */
+function lesePersonen_(p) {
+  let liste = [];
+
+  if (p.personen) {
+    try {
+      liste = JSON.parse(p.personen);
+    } catch (err) {
+      liste = [];
+    }
+  } else {
+    liste = [{ vorname: p.vorname, nachname: p.nachname }];
+  }
+
+  return liste
+    .map(function (x) {
+      const vorname = String((x && x.vorname) || '').trim();
+      const nachname = String((x && x.nachname) || '').trim();
+      return { vorname: vorname, nachname: nachname, name: (vorname + ' ' + nachname).trim() };
+    })
+    .filter(function (x) { return x.vorname && x.nachname; });
+}
+
 /* Mail bei neuer Anmeldung */
 function sendeMail_(d) {
+  const namen = d.personen.map(function (x) { return '- ' + x.name; }).join('\n');
+  const anzahl = d.personen.length;
+
   const text =
-    'Neue Anmeldung\n\n' +
-    'Name: '      + (d.name    || '-') + '\n' +
+    'Neue Anmeldung (' + anzahl + (anzahl === 1 ? ' Person' : ' Personen') + ')\n\n' +
+    namen + '\n\n' +
     'Bemerkung: ' + (d.remarks || '-') + '\n';
 
-  MailApp.sendEmail(
-    MAIL_EMPFAENGER,
-    'Stef60 – neue Anmeldung: ' + (d.name || 'Unbekannt'),
-    text
-  );
+  const betreff = anzahl === 1
+    ? d.personen[0].name
+    : d.personen[0].name + ' + ' + (anzahl - 1);
+
+  MailApp.sendEmail(MAIL_EMPFAENGER, 'Stef60 – neue Anmeldung: ' + betreff, text);
 }
 
 /* Einmal im Editor ausfuehren, um die Mail-Berechtigung zu erteilen */
 function testMail() {
   sendeMail_({
-    name: 'Test Person',
+    personen: [{ name: 'Test Person' }, { name: 'Zweite Person' }],
     remarks: 'Das ist nur ein Test.',
   });
 }
@@ -110,9 +145,9 @@ function sheet() {
     return sh;
   }
 
-  /* Solange noch keine Anmeldung drinsteht, darf die Kopfzeile an die
-     neuen Spalten angepasst werden. */
-  if (sh.getLastRow() < 2) writeHeader(sh);
+  /* Kopfzeile immer aktuell halten. Das ist sicher, weil neue
+     Spalten nur hinten angehaengt werden. */
+  writeHeader(sh);
 
   return sh;
 }

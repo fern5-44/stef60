@@ -102,6 +102,38 @@ fieldset.question input {
   accent-color: var(--red);
 }
 
+/* Mehrere Personen: je Person ein Block mit Vor- und Nachname */
+.person {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--card);
+}
+
+.person h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.person-felder {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.person-felder p {
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .person-felder {
+    grid-template-columns: 1fr;
+  }
+}
+
 label {
   display: block;
   margin-bottom: 4px;
