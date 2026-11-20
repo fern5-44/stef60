@@ -435,6 +435,36 @@
     });
   </script>
 
+    <!-- Konfetti beim Laden der Seite (Rot, löst sich auf) -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script>
+    (function () {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      // Rot-Palette: Bordeaux, Karminrot, Kirschrot, Koralle, Rosé
+      var farben = ["#7a0019", "#a4161a", "#c9184a", "#e5383b", "#f28482", "#ffb3c1"];
+      var ende = Date.now() + 3500;
+
+      (function regnen() {
+        confetti({
+          particleCount: 3,
+          angle: 270,
+          spread: 70,
+          startVelocity: 5,
+          gravity: 0.45,
+          drift: (Math.random() - 0.5) * 0.6,
+          ticks: 160,          // kürzere Lebensdauer = löst sich früher auf
+          scalar: 0.9,
+          shapes: ["square", "circle"],
+          colors: farben,
+          origin: { x: Math.random(), y: -0.1 }
+        });
+        if (Date.now() < ende) requestAnimationFrame(regnen);
+      })();
+    })();
+  </script>
+
+
 </body>
 
 </html>
