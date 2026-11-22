@@ -10,10 +10,6 @@
   <link rel="stylesheet" href="style.css" />
 
   <style>
-    .teilnahme label {
-      display: block;
-    }
-
     /* Flyer wird nicht mehr gebraucht */
     #flyer-alt {
       display: none !important;
@@ -253,29 +249,33 @@
         </legend>
 
 
-        <!-- NEU: Teilnahme (Feldname "teilnahme": "ja" oder "nein") -->
-        <fieldset class="teilnahme">
-
-          <legend>
-            Kommst du ans Fest?
-          </legend>
-
-          <label>
-            <input type="radio" name="teilnahme" value="ja" checked />
-            Ja, ich komme
-          </label>
-
-          <label>
-            <input type="radio" name="teilnahme" value="nein" />
-            Nein, ich melde mich ab
-          </label>
-
-        </fieldset>
-
-
+        <!-- Teilnahme (Feldname "teilnahme": "ja" oder "nein") -->
         <p>
 
-          <label for="anzahl" id="anzahl-label">
+          <label for="teilnahme">
+            Kommst du ans Fest?
+          </label>
+
+          <select
+            id="teilnahme"
+            name="teilnahme">
+            <option value="ja" selected>Ja, ich melde mich an</option>
+            <option value="nein">Nein, ich melde mich ab</option>
+          </select>
+
+        </p>
+
+
+        <!-- Nur bei Abmeldung sichtbar -->
+        <p id="abmelde-hinweis" hidden>
+          Gib bitte deinen Namen an, damit ich weiss, wer absagt.
+        </p>
+
+
+        <!-- Nur bei Anmeldung sichtbar -->
+        <p id="anzahl-zeile">
+
+          <label for="anzahl">
             Wie viele Personen meldest du an?
           </label>
 
@@ -358,8 +358,7 @@
 
 
           <button
-            type="submit"
-            id="submit-btn">
+            type="submit">
             Anmeldung abschicken
           </button>
 
@@ -478,12 +477,16 @@
     });
   </script>
 
-  <!-- NEU: An- oder Abmeldung -->
+  <!-- An- oder Abmeldung -->
   <script>
     (function () {
       var form = document.getElementById("rsvp");
-      var anzahlLabel = document.getElementById("anzahl-label");
-      var submitBtn = document.getElementById("submit-btn");
+      var teilnahme = document.getElementById("teilnahme");
+      var anzahl = document.getElementById("anzahl");
+      var anzahlZeile = document.getElementById("anzahl-zeile");
+      var abmeldeHinweis = document.getElementById("abmelde-hinweis");
+      var step1 = form.querySelector('[data-step="1"]');
+      var errorEl = document.getElementById("error");
       var done = document.getElementById("step-done");
       var doneTitle = document.getElementById("done-title");
       var abmeldeText = document.getElementById("abmelde-text");
@@ -492,6 +495,10 @@
       // Zustand beim Absenden merken (falls app.js das Formular danach zurücksetzt)
       var warAbmeldung = false;
       var namen = [];
+
+      function istAbmeldung() {
+        return teilnahme.value === "nein";
+      }
 
       // Vorname + Nachname pro Person (je zwei Felder hintereinander)
       function namenLesen() {
@@ -506,24 +513,40 @@
         return liste;
       }
 
-      function istAbmeldung() {
-        var r = form.querySelector('input[name="teilnahme"]:checked');
-        return !!r && r.value === "nein";
-      }
-
-      function texteAnpassen() {
+      // Bei Abmeldung: Personenzahl ausblenden, nur 1 Namensfeld
+      function ansichtAnpassen() {
         var nein = istAbmeldung();
-        anzahlLabel.textContent = nein
-          ? "Wie viele Personen meldest du ab?"
-          : "Wie viele Personen meldest du an?";
-        submitBtn.textContent = nein
-          ? "Abmeldung abschicken"
-          : "Anmeldung abschicken";
+        anzahlZeile.hidden = nein;
+        abmeldeHinweis.hidden = !nein;
+        if (nein && anzahl.value !== "1") {
+          anzahl.value = "1";
+          anzahl.dispatchEvent(new Event("change", { bubbles: true }));
+        }
       }
 
-      form.addEventListener("change", function (e) {
-        if (e.target.name === "teilnahme") texteAnpassen();
-      });
+      teilnahme.addEventListener("change", ansichtAnpassen);
+
+      // Bei Abmeldung schickt "Weiter" direkt ab (Bemerkungen überspringen)
+      document.addEventListener("click", function (e) {
+        var weiter = e.target.closest("[data-next]");
+        if (!weiter || !step1.contains(weiter) || !istAbmeldung()) return;
+
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        var leer = Array.prototype.some.call(
+          document.querySelectorAll("#personen input"),
+          function (f) { return !f.value.trim(); }
+        );
+        if (leer) {
+          errorEl.textContent = "Bitte Vor- und Nachname ausfüllen.";
+          return;
+        }
+        errorEl.textContent = "";
+
+        if (form.requestSubmit) form.requestSubmit();
+        else form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      }, true);
 
       // Capture-Phase: läuft vor dem Submit-Handler von app.js
       document.addEventListener("submit", function (e) {
@@ -547,7 +570,7 @@
         });
       }).observe(done, { attributes: true, attributeFilter: ["hidden"] });
 
-      texteAnpassen();
+      ansichtAnpassen();
     })();
   </script>
 
