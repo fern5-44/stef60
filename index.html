@@ -9,6 +9,23 @@
 
   <link rel="stylesheet" href="style.css" />
 
+  <style>
+    .teilnahme label {
+      display: block;
+    }
+
+    /* Flyer wird nicht mehr gebraucht */
+    #flyer-alt {
+      display: none !important;
+    }
+
+    /* Bei Abmeldung nur den Dankestext zeigen */
+    #step-done.abgemeldet #uebersicht,
+    #step-done.abgemeldet .actions {
+      display: none !important;
+    }
+  </style>
+
 </head>
 
 
@@ -89,22 +106,22 @@
 
           <label>
             <input type="radio" name="question1" value="a" />
-            111111
+            2B
           </label>
 
           <label>
             <input type="radio" name="question1" value="b" />
-            111000
+            2C
           </label>
 
           <label>
             <input type="radio" name="question1" value="c" />
-            111101
+            4E
           </label>
 
           <label>
             <input type="radio" name="question1" value="d" />
-            111100
+            3C
           </label>
 
         </fieldset>
@@ -125,10 +142,10 @@
               data-tipp="tipp2"
               aria-label="Tipp anzeigen"
               aria-expanded="false"
-              aria-controls="tipp2">💡</button>Frage 2: Mein Name auf Chinesisch</legend>
+              aria-controls="tipp2">💡</button>Frage 2: Mein liebstes Ferienland und zugleich auch Fussballnation, nebst der Schweiz?</legend>
 
           <div class="tipp-box" id="tipp2" hidden>
-            <p>Muss man wissen!!!</p>
+            <p>ale le ...</p>
             <button
               type="button"
               class="tipp-close"
@@ -138,22 +155,22 @@
 
           <label>
             <input type="radio" name="question2" value="a" />
-            Chanjing
+            Belgien
           </label>
 
           <label>
             <input type="radio" name="question2" value="b" />
-            Schüdifu
+            Frankreich
           </label>
 
           <label>
             <input type="radio" name="question2" value="c" />
-            Xingchom
+            Andorra
           </label>
 
           <label>
             <input type="radio" name="question2" value="d" />
-            Schmafun
+            Dänemark
           </label>
 
         </fieldset>
@@ -174,10 +191,10 @@
               data-tipp="tipp3"
               aria-label="Tipp anzeigen"
               aria-expanded="false"
-              aria-controls="tipp3">💡</button>Frage 3: Meine Lieblingsschoki</legend>
+              aria-controls="tipp3">💡</button>Frage 3: Eine meiner Lieblingsbands in meiner Jugend?</legend>
 
           <div class="tipp-box" id="tipp3" hidden>
-            <p>Süss</p>
+            <p>Googlen hilft...</p>
             <button
               type="button"
               class="tipp-close"
@@ -187,22 +204,22 @@
 
           <label>
             <input type="radio" name="question3" value="a" />
-            Braune Lindttafel
+           The Flying Dragons
           </label>
 
           <label>
             <input type="radio" name="question3" value="b" />
-            Weisse Schokolade
+            The Dancing Wolves
           </label>
 
           <label>
             <input type="radio" name="question3" value="c" />
-            Kirschtafel
+            The Rolling Stones
           </label>
 
           <label>
             <input type="radio" name="question3" value="d" />
-            Möglichst dunkel
+          The Running Ducks
           </label>
 
         </fieldset>
@@ -224,7 +241,7 @@
 
 
       <!-- ===================================================
-           SCHRITT 1 – ANMELDUNG
+           SCHRITT 1 – ANMELDUNG / ABMELDUNG
            =================================================== -->
 
       <fieldset
@@ -236,9 +253,29 @@
         </legend>
 
 
+        <!-- NEU: Teilnahme (Feldname "teilnahme": "ja" oder "nein") -->
+        <fieldset class="teilnahme">
+
+          <legend>
+            Kommst du ans Fest?
+          </legend>
+
+          <label>
+            <input type="radio" name="teilnahme" value="ja" checked />
+            Ja, ich komme
+          </label>
+
+          <label>
+            <input type="radio" name="teilnahme" value="nein" />
+            Nein, ich melde mich ab
+          </label>
+
+        </fieldset>
+
+
         <p>
 
-          <label for="anzahl">
+          <label for="anzahl" id="anzahl-label">
             Wie viele Personen meldest du an?
           </label>
 
@@ -321,7 +358,8 @@
 
 
           <button
-            type="submit">
+            type="submit"
+            id="submit-btn">
             Anmeldung abschicken
           </button>
 
@@ -357,25 +395,30 @@
       </h2>
 
 
-      <!-- Übersicht: Bild wird in app.js geladen (UEBERSICHT_DATEI).
-           Fehlt die Datei noch, wird dieser Bereich ausgeblendet. -->
-      <canvas
-        id="ticket"
-        width="1080"
-        height="1350"
-        role="img"
-        aria-label="Übersicht zum Fest">
-      </canvas>
+      <!-- Erscheint nur bei einer Abmeldung -->
+      <p id="abmelde-text" hidden>
+        Danke für deine Abmeldung.
+      </p>
+
+
+      <!-- Kurze Übersicht: wer wurde angemeldet -->
+      <div id="uebersicht">
+        <p>Du hast angemeldet:</p>
+        <ul id="namen-liste"></ul>
+        <p>Trag dir das Fest gleich in den Kalender ein:</p>
+      </div>
+
+
+      <!-- Alter Flyer: unsichtbar, bleibt nur drin, damit app.js
+           nicht abbricht. Kann weg, sobald app.js #ticket und
+           #download nicht mehr verwendet. -->
+      <div id="flyer-alt" hidden aria-hidden="true">
+        <canvas id="ticket" width="1080" height="1350"></canvas>
+        <button type="button" id="download" tabindex="-1"></button>
+      </div>
 
 
       <p class="actions">
-
-        <button
-          type="button"
-          id="download">
-          Übersicht herunterladen
-        </button>
-
 
         <!-- Termin für alle gleich – Datei: siehe TERMIN_DATEI in app.js -->
          <a
@@ -433,6 +476,79 @@
         btn.focus();
       }
     });
+  </script>
+
+  <!-- NEU: An- oder Abmeldung -->
+  <script>
+    (function () {
+      var form = document.getElementById("rsvp");
+      var anzahlLabel = document.getElementById("anzahl-label");
+      var submitBtn = document.getElementById("submit-btn");
+      var done = document.getElementById("step-done");
+      var doneTitle = document.getElementById("done-title");
+      var abmeldeText = document.getElementById("abmelde-text");
+      var namenListe = document.getElementById("namen-liste");
+
+      // Zustand beim Absenden merken (falls app.js das Formular danach zurücksetzt)
+      var warAbmeldung = false;
+      var namen = [];
+
+      // Vorname + Nachname pro Person (je zwei Felder hintereinander)
+      function namenLesen() {
+        var felder = document.querySelectorAll("#personen input");
+        var liste = [];
+        for (var i = 0; i < felder.length; i += 2) {
+          var vor = felder[i].value.trim();
+          var nach = felder[i + 1] ? felder[i + 1].value.trim() : "";
+          var name = (vor + " " + nach).trim();
+          if (name) liste.push(name);
+        }
+        return liste;
+      }
+
+      function istAbmeldung() {
+        var r = form.querySelector('input[name="teilnahme"]:checked');
+        return !!r && r.value === "nein";
+      }
+
+      function texteAnpassen() {
+        var nein = istAbmeldung();
+        anzahlLabel.textContent = nein
+          ? "Wie viele Personen meldest du ab?"
+          : "Wie viele Personen meldest du an?";
+        submitBtn.textContent = nein
+          ? "Abmeldung abschicken"
+          : "Anmeldung abschicken";
+      }
+
+      form.addEventListener("change", function (e) {
+        if (e.target.name === "teilnahme") texteAnpassen();
+      });
+
+      // Capture-Phase: läuft vor dem Submit-Handler von app.js
+      document.addEventListener("submit", function (e) {
+        if (e.target !== form) return;
+        warAbmeldung = istAbmeldung();
+        namen = namenLesen();
+      }, true);
+
+      // Sobald die Bestätigung erscheint: Übersicht füllen bzw. Dank zeigen
+      new MutationObserver(function () {
+        if (done.hidden) return;
+        done.classList.toggle("abgemeldet", warAbmeldung);
+        abmeldeText.hidden = !warAbmeldung;
+        doneTitle.textContent = warAbmeldung ? "Abgemeldet" : "Angemeldet";
+
+        namenListe.textContent = "";
+        namen.forEach(function (n) {
+          var li = document.createElement("li");
+          li.textContent = n;
+          namenListe.appendChild(li);
+        });
+      }).observe(done, { attributes: true, attributeFilter: ["hidden"] });
+
+      texteAnpassen();
+    })();
   </script>
 
     <!-- Konfetti beim Laden der Seite (Rot, löst sich auf) -->
