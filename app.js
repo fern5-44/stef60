@@ -18,11 +18,10 @@ const TERMIN_DATEI = 'termine.ics';          // Kalendertermin, für alle gleich
 /* Termin für den Google-Kalender-Knopf
    Format: JJJJMMTT T HHMMSS  (z. B. 20270109T140000 = 9.1.2027, 14:00) */
 const TERMIN = {
-  titel: 'Stefans Geburtstag',
-  start: '20270109T140000',          // PLATZHALTER
-  ende:  '20270109T230000',          // PLATZHALTER
-  ort:   'Adresse hier eintragen',   // PLATZHALTER
-  info:  ''
+  titel: 'Stefan feiert Geburtstag',
+  start: '20270403T180000',          // PLATZHALTER
+  ende:  '20270404T020000',          // PLATZHALTER
+  ort:   'Sandbänkli 3\, 9220 Bischofszell',   // PLATZHALTER
 };
 const UEBERSICHT_DATEI = 'uebersicht.png';  // Übersicht zum Herunterladen
 
